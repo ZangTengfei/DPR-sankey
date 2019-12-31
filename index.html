@@ -7,7 +7,7 @@
   <title>兆观医生绑定关系桑基图</title>
 </head>
 <body>
-  <div id="chart" style="width: 500px;height: 500px;"></div>
+  <div id="chart" style="width: 1000px;height: 1000px;"></div>
 </body>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/4.3.0/echarts.min.js"></script>
 <script src="//cdn.jsdelivr.net/npm/leancloud-storage@3.15.0/dist/av-min.js"></script>
@@ -20,29 +20,47 @@
     serverURLs: "https://api-mhn.megahealth.cn"
   });
   var query = new AV.Query('DoctorPatientRelation');
-  query.include('idPatient.name', 'idDoctor.name')
+  query.include('idPatient', 'idDoctor')
   query.find().then(function (res) {
     var links = [];
     var nodes = [];
+    console.log(res.length);
+    for (let i = 0; i < res.length; i++) {
+      const item = res[i];
+      // console.log(element);
 
-    res.forEach(function(item) {
-      var doctorName = item.get('idDoctor')&&item.get('idDoctor').get('name')
-      var patientName = item.get('idPatient')&&item.get('idPatient').get('name')
-      if(doctorName&&patientName) {
+      // 删除空数据
+      // if(!item.get('idDoctor')||!item.get('idPatient')) {
+      //   console.log(item.id);
+      //   item.destroy();
+      // }
+
+      var doctorName = item.get('idDoctor')&&item.get('idDoctor').get('name')||'空'
+      var doctorId = item.get('idDoctor')&&item.get('idDoctor').id||''
+      var patientName = item.get('idPatient')&&item.get('idPatient').get('name')||'空'
+      var patientId = item.get('idPatient')&&item.get('idPatient').id||''
+      var doctor = doctorName + doctorId
+      var patient = patientName + patientId
+      // console.log(doctor);
+      // console.log(patient);
+      if(doctor!=='空'&&patient!=='空') {
         links.push({
-          source: doctorName,
-          target: patientName,
+          source: doctor,
+          target: patient,
           value: 1
         })
 
-        if(nodes.indexOf(doctorName) == -1) {
-          nodes.push(doctorName)
+        if(nodes.indexOf(doctor) == -1) {
+          nodes.push(doctor)
         }
-        if(nodes.indexOf(patientName) == -1) {
-          nodes.push(patientName)
+        if(nodes.indexOf(patient) == -1) {
+          nodes.push(patient)
         }
       }
-    })
+
+    }
+
+
     var arr=[];
     
     nodes.forEach(function(a) {
@@ -56,7 +74,6 @@
     };
     console.log(data);
     
-
     myChart.setOption(option = {
       title: {
         text: '兆观医生绑定关系桑基图'
